@@ -1,8 +1,6 @@
 package com.mecatow.vehicleservice.controller;
 
-import com.mecatow.vehicleservice.dto.AddVehicleRequestDto;
-import com.mecatow.vehicleservice.dto.AddVehicleResponseDto;
-import com.mecatow.vehicleservice.dto.VehicleResponseDto;
+import com.mecatow.vehicleservice.dto.*;
 import com.mecatow.vehicleservice.service.VehicleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,5 +48,25 @@ public class VehicleController {
                                 .getVehiclesByOwnerId(1L)
                 );
     }
+
+    @PutMapping("/{vehicleId}")
+    public ResponseEntity<VehicleResponseDto> updateVehicleById(@PathVariable Long vehicleId, @RequestBody @Valid UpdateVehicleRequestDto updateVehicleRequestDto){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(vehicleService
+                        .updateVehicle(vehicleId, updateVehicleRequestDto)
+                );
+    }
+
+    @DeleteMapping("/{vehicleId}")
+    public ResponseEntity<DeleteResponseDto> deleteVehicleById(@PathVariable Long vehicleId){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(
+                        vehicleService
+                                .deleteVehicleById(vehicleId)
+                );
+    }
+
 
 }

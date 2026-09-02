@@ -1,9 +1,6 @@
 package com.mecatow.vehicleservice.service.impl;
 
-import com.mecatow.vehicleservice.dto.AddVehicleRequestDto;
-import com.mecatow.vehicleservice.dto.AddVehicleResponseDto;
-import com.mecatow.vehicleservice.dto.UpdateVehicleRequestDto;
-import com.mecatow.vehicleservice.dto.VehicleResponseDto;
+import com.mecatow.vehicleservice.dto.*;
 import com.mecatow.vehicleservice.entity.Vehicle;
 import com.mecatow.vehicleservice.exception.InvalidManufacturingYearException;
 import com.mecatow.vehicleservice.exception.VehicleAlreadyExistsException;
@@ -65,8 +62,39 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public VehicleResponseDto updateVehicle(Long vehicleId, UpdateVehicleRequestDto updateVehicleRequestDto) {
-        return null;
+        Vehicle vehicle = vehicleRepository
+                .findById(vehicleId)
+                .orElseThrow(() -> new VehicleNotFoundException( "Vehicle does not exist with Vehicle Id: " + vehicleId));
+
+        if (updateVehicleRequestDto.getManufacturingYear() != null && updateVehicleRequestDto.getManufacturingYear() > Year.now().getValue()){
+            throw new InvalidManufacturingYearException("Manufacturing Year cannot be in future");
+        }
+
+        vehicle.setVehicleType(updateVehicleRequestDto.getVehicleType());
+        vehicle.setFuelType(updateVehicleRequestDto.getFuelType());
+        vehicle.setBrand(updateVehicleRequestDto.getBrand());
+        vehicle.setModel(updateVehicleRequestDto.getModel());
+        vehicle.setManufacturingYear(updateVehicleRequestDto.getManufacturingYear() != null ? Year.of(updateVehicleRequestDto.getManufacturingYear()) : null);
+
+        Vehicle savedVehicle = vehicleRepository.save(vehicle);
+
+        return VehicleMapper.toVehicleResponseDto(savedVehicle);
     }
 
+    @Override
+    public DeleteResponseDto deleteVehicleById(Long vehicleId) {
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new VehicleNotFoundException( "Vehicle does not exist with Vehicle Id: " + vehicleId));
 
+        DeleteResponseDto deleteResponseDto = DeleteResponseDto
+                .builder()
+                .vehicleId(vehicle.getVehicleId())
+                .vehicleNumber(vehicle.getVehicleNumber())
+                .message("Vehicle deleted successfully")
+                .build();
+
+        vehicleRepository.delete(vehicle);
+
+        return deleteResponseDto;
+    }
 }
